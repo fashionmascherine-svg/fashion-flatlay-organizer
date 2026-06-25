@@ -1,0 +1,40 @@
+# Python virtual environment
+venv/
+.venv/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Environment variables (API keys)
+.env
+
+# Benchmark output
+results/
+*.jpg
+*.png
+*.jpeg
+*.gif
+*.webp
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Test files (temporary)
+test_*.py
+/tmp/
+
+# Distribution / build
+dist/
+build/
+*.egg-info/

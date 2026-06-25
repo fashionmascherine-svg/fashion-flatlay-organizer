@@ -17,7 +17,7 @@ import requests
 
 
 GEMINI_KEY = os.getenv("GEMINI_KEY", "")
-GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent"
 
 
 async def analyze_image_with_gemini(image_path: str) -> str:
@@ -37,11 +37,9 @@ async def analyze_image_with_gemini(image_path: str) -> str:
                 {
                     "text": (
                         "List EVERY clothing item, shoe, bag, and accessory visible in this image. "
-                        "Be extremely specific: describe exact color, style, type for each item. "
-                        "Format as a detailed comma-separated list suitable for a fashion photographer's shot list. "
-                        "Include count if multiple of same type. "
-                        "Example: orange wedge slingback sandals, black structured leather handbag, "
-                        "pink sheer chiffon blouse..."
+                        "Keep each item description short and concise (max 8 words per item). "
+                        "Format as a simple comma-separated list. "
+                        "Example: orange wedge sandals, black leather handbag, pink chiffon blouse"
                     )
                 }
             ]
@@ -73,11 +71,13 @@ async def generate(image_path: str, prompt: str, output_path: str) -> bool:
     item_list = await analyze_image_with_gemini(image_path)
     print(f"    [Gemini] Detected: {item_list[:150]}...")
 
-    # Step 2: Build enriched flat-lay prompt
+    # Step 2: Build enriched flat-lay prompt (truncate item list to avoid URL length issues)
+    max_items_len = 400
+    truncated_items = item_list if len(item_list) <= max_items_len else item_list[:max_items_len].rsplit(",", 1)[0] + "..."
     enriched_prompt = (
         "Professional overhead flat lay fashion photography on pristine white marble surface. "
         "All items neatly organized, clean and unwrinkled, with visible labels/details. "
-        f"Include ALL of these items — nothing omitted: {item_list}. "
+        f"Include ALL of these items — nothing omitted: {truncated_items}. "
         "Layout: clothing items folded/flat in upper-left area, shoes paired neatly in lower-right, "
         "bags and accessories arranged center-right. Generous white space between items. "
         "Lighting: even soft studio lighting, no harsh shadows, slightly warm tone. "

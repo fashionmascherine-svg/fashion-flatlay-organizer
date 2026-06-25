@@ -23,14 +23,14 @@
 
 ## 🆓 Supported Free APIs
 
-| # | Service | Auth needed | Img2Img | Free limit | Cost |
+| # | Service | Auth needed | Model used | Free limit | Cost |
 |---|---|---|---|---|---|
-| 1 | **Pollinations.ai** | ❌ None | ❌ (t2i prompt) | ♾️ Unlimited | $0 |
-| 2 | **HuggingFace Inference** | ✅ Dev key only | ✅ | ~300 req/hr | $0 |
-| 3 | **Cloudflare Workers AI** | ✅ Dev key only | ✅ `/edits` | 100k/day | $0 |
-| 4 | **SiliconFlow** | ✅ Dev key only | ✅ | Credits on signup | $0 |
-| 5 | **FASHN.ai** | ✅ Dev key only | ✅ Fashion-specific | Free tier | $0 |
-| 6 | **Gemini Vision + Pollinations** | ✅ Dev key only | ✅ Pipeline | 1M tokens/day | $0 |
+| 1 | **Pollinations.ai** | ❌ None | FLUX (t2i) | ♾️ Unlimited | $0 |
+| 2 | **HuggingFace Inference** | ✅ Dev key only | FLUX.1-schnell | ~300 req/hr | $0 |
+| 3 | **Cloudflare Workers AI** | ✅ Dev key only | FLUX.1-schnell | 100k/day | $0 |
+| 4 | **SiliconFlow** | ✅ Dev key only | SDXL / FLUX | Credits on signup | $0 |
+| 5 | **FASHN.ai** | ✅ Dev key only | Fashion-specific | Free tier | $0 |
+| 6 | **Gemini Vision + Pollinations** | ✅ Dev key only | Gemini 3.1 Flash Lite + FLUX | 1M tokens/day | $0 |
 
 ---
 
@@ -39,9 +39,20 @@
 ```bash
 git clone https://github.com/fashionmascherine-svg/fashion-flatlay-organizer
 cd fashion-flatlay-organizer
+
+# Create and activate virtual environment (recommended)
+python3 -m venv venv
+source venv/bin/activate   # Linux/Mac/WSL
+# venv\Scripts\activate    # Windows CMD
+
+# Install dependencies
 pip install -r requirements.txt
+
+# Configure API keys
 cp .env.example .env
 # Fill in your API keys in .env (only developer keys needed)
+
+# Run benchmark
 python benchmark.py --image your_clothes.jpg
 ```
 
@@ -54,16 +65,18 @@ fashion-flatlay-organizer/
 ├── benchmark.py            # Main benchmark runner
 ├── providers/
 │   ├── __init__.py
-│   ├── pollinations.py     # Zero-auth, unlimited
-│   ├── huggingface.py      # img2img with HF Inference API
+│   ├── pollinations.py     # Zero-auth, unlimited (FLUX model)
+│   ├── huggingface.py      # FLUX.1-schnell via HF Inference API
 │   ├── cloudflare.py       # img2img via Workers AI (100k/day)
 │   ├── siliconflow.py      # img2img via SiliconFlow
 │   ├── fashn.py            # Fashion virtual try-on API
-│   └── gemini_pipeline.py  # Vision analysis + Pollinations (BEST FREE)
+│   └── gemini_pipeline.py  # Gemini 3.1 Flash Lite + Pollinations
 ├── scorer.py               # Quality scoring engine (no AI needed)
 ├── report.py               # HTML report generator
 ├── requirements.txt
 ├── .env.example
+├── .gitignore
+├── project_state.md
 └── .github/workflows/benchmark.yml
 ```
 
@@ -73,7 +86,7 @@ fashion-flatlay-organizer/
 
 The `gemini_pipeline` provider is the **smartest free approach**:
 
-1. **Gemini 2.0 Flash** (free: 1M tokens/day via Google AI Studio) analyzes your messy photo and extracts a precise item-by-item inventory
+1. **Gemini 3.1 Flash Lite** (free: 1M tokens/day via Google AI Studio) analyzes your messy photo and extracts a precise item-by-item inventory
 2. Builds a hyper-detailed prompt with every detected item
 3. **Pollinations.ai** (free, no limit, no key) generates the organized flat-lay
 
@@ -82,6 +95,8 @@ Your messy photo → Gemini Vision → item list → Pollinations FLUX → organ
 ```
 
 Zero cost. Zero user registration. Just two free developer API keys.
+
+> **Note:** The pipeline now uses `gemini-3.1-flash-lite` instead of `gemini-2.0-flash` for broader free-tier availability.
 
 ---
 
@@ -131,6 +146,19 @@ GEMINI_KEY=your_gemini_key
 
 # Pollinations: NO KEY NEEDED — works instantly
 ```
+
+---
+
+## 🔧 Recent Fixes & Improvements
+
+| Fix | Description |
+|---|---|
+| **HuggingFace model** | Changed from `stable-diffusion-xl-refiner-1.0` to `black-forest-labs/FLUX.1-schnell` for router compatibility |
+| **Gemini model** | Updated from `gemini-2.0-flash` to `gemini-3.1-flash-lite` for reliable free-tier access |
+| **Env vars loading** | Moved `load_dotenv()` before provider imports so API keys are available when modules initialize |
+| **Prompt sanitization** | Removed newlines from default prompt to prevent URL encoding issues with Pollinations |
+| **Prompt length safety** | Gemini item list is now truncated to 400 characters to avoid Pollinations URL length limits |
+| **.gitignore** | Added to exclude venv/, results/, .env, __pycache__/ from version control |
 
 ---
 

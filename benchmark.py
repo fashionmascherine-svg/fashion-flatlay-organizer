@@ -17,12 +17,13 @@ import time
 from pathlib import Path
 from datetime import datetime
 
+# Load .env BEFORE importing providers so env vars are available
+from dotenv import load_dotenv
+load_dotenv()
+
 from providers import pollinations, huggingface, cloudflare, siliconflow, fashn, gemini_pipeline
 from scorer import score_result
 from report import generate_html_report
-from dotenv import load_dotenv
-
-load_dotenv()
 
 PROVIDERS = {
     "pollinations": pollinations.generate,
@@ -33,14 +34,16 @@ PROVIDERS = {
     "gemini_pipeline": gemini_pipeline.generate,
 }
 
-BASE_PROMPT = """Professional fashion flat lay photo.
-Organize ALL these items neatly on a clean white marble surface:
-- 3 pairs of shoes: orange wedge sandals, nude beige wedge sandals, gold metallic strappy heels
-- 3 bags: black structured handbag, striped canvas tote (orange/white/green), small red crossbody clutch
-- 6 clothing items: beige camel blazer, pink chiffon sheer scarf/top, turquoise aqua blouse, red coral jacket (folded), additional garments
-Arrangement: clothing laid flat top-left, shoes paired bottom-right, bags center-right.
-Style: editorial fashion photography, overhead shot (bird-eye view), even soft lighting, no shadows.
-DO NOT omit any item. All items must be visible."""
+BASE_PROMPT = (
+    "Professional fashion flat lay photo. "
+    "Organize ALL these items neatly on a clean white marble surface: "
+    "- 3 pairs of shoes: orange wedge sandals, nude beige wedge sandals, gold metallic strappy heels. "
+    "- 3 bags: black structured handbag, striped canvas tote (orange/white/green), small red crossbody clutch. "
+    "- 6 clothing items: beige camel blazer, pink chiffon sheer scarf/top, turquoise aqua blouse, red coral jacket (folded), additional garments. "
+    "Arrangement: clothing laid flat top-left, shoes paired bottom-right, bags center-right. "
+    "Style: editorial fashion photography, overhead shot (bird-eye view), even soft lighting, no shadows. "
+    "DO NOT omit any item. All items must be visible."
+)
 
 WATERFALL_ORDER = ["gemini_pipeline", "cloudflare", "huggingface", "siliconflow", "fashn", "pollinations"]
 
