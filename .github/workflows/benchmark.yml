@@ -1,0 +1,50 @@
+name: Benchmark CI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      providers:
+        description: 'Providers to test (comma-separated or all)'
+        default: 'gemini_pipeline,pollinations'
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Download sample image
+        run: |
+          curl -L -o test_clothes.jpg \
+            "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=800"
+
+      - name: Run benchmark
+        run: |
+          python benchmark.py \
+            --image test_clothes.jpg \
+            --providers "${{ github.event.inputs.providers || 'pollinations' }}" \
+            --output results/
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          SILICONFLOW_KEY: ${{ secrets.SILICONFLOW_KEY }}
+          FASHN_KEY: ${{ secrets.FASHN_KEY }}
+          GEMINI_KEY: ${{ secrets.GEMINI_KEY }}
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results-${{ github.run_id }}
+          path: results/
+          retention-days: 30
